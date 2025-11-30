@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>러닝 진행</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Sandoll Gothic Neo1", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: #d6e5cf; /* 세이지 그린 톤 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .device {
+      padding: 14px;
+      border-radius: 46px;
+      background: #dfead1;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .screen {
+      width: 390px;
+      height: 844px;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      background: #d6e5cf; /* 세이지 그린 톤으로 통일 */
+    }
+
+    /* 상단 상태바 (Home과 동일 스타일) */
+    .status-bar {
+      position: absolute;
+      top: 8px;
+      left: 0;
+      right: 0;
+      padding: 0 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #222;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .status-left {
+      font-weight: 600;
+    }
+
+    .status-right {
+      display: flex;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    /* 러닝 화면 전체 */
+    .running-screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      padding-top: 28px; /* 상태바 아래 여백 */
+    }
+
+    /* 지도 영역 */
+    .running-map {
+      flex: 1;
+      background-image: url("지도.png");
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    .running-map-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), transparent 40%, rgba(0, 0, 0, 0.25));
+      pointer-events: none;
+    }
+
+    .map-marker {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
+    }
+
+    .map-current {
+      bottom: 24%;
+      right: 20%;
+      background: rgba(120, 190, 255, 0.95);
+    }
+
+    /* 러닝 통계 카드 */
+    .running-stats {
+      padding: 10px 16px 8px;
+      background: #f5f5f7;
+    }
+
+    .running-stats-card {
+      border-radius: 20px;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .stat-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 11px;
+      color: #8a755f;
+    }
+
+    .stat-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1px solid #e0d4c5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #6a4b32;
+      margin-bottom: 3px;
+    }
+
+    .stat-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: #6a4b32;
+    }
+
+    /* 하단 Pause / Stop 버튼 영역 */
+    .running-bottom {
+      padding: 10px 16px 24px;
+      background: #f5f5f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .running-action-btn {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #8fd694, #7ac37b);
+      box-shadow: 0 8px 16px rgba(122, 195, 123, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    .running-action-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 10px rgba(122, 195, 123, 0.8);
+    }
+
+    .running-pause-btn.paused {
+      background: linear-gradient(135deg, #ffc163, #ff9b4a);
+    }
+
+    /* AI 경로추천 버튼 */
+    .ai-route-btn {
+      position: absolute;
+      top: 50px;
+      right: 16px;
+      background: linear-gradient(135deg, #8fd694, #7ac37b);
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(122, 195, 123, 0.6);
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: "Sandoll Gothic Neo1", sans-serif;
+    }
+
+    .ai-route-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 8px rgba(122, 195, 123, 0.7);
+    }
+
+    /* AI 경로 추천 오버레이 */
+    .ai-route-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .ai-route-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* AI 경로 추천 패널 */
+    .ai-route-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #ffffff;
+      border-radius: 24px 24px 0 0;
+      max-height: 85vh;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .ai-route-panel.open {
+      transform: translateY(0);
+    }
+
+    .ai-route-header {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ai-route-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .ai-route-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: #f5f5f5;
+      border-radius: 50%;
+      font-size: 20px;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ai-route-close:active {
+      background: #e5e5e5;
+    }
+
+    /* AI 지도 영역 */
+    .ai-route-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .ai-route-map-container {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      background-image: url("ai지도.png");
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 경로 추천 리스트 */
+    .route-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .route-item {
+      background: #f8f9fa;
+      border-radius: 16px;
+      padding: 16px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .route-item:hover {
+      background: #f0f5f0;
+      border-color: #8fd694;
+    }
+
+    .route-item.selected {
+      background: #e8f5e9;
+      border-color: #7ac37b;
+    }
+
+    .route-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .route-item-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .route-item-badge {
+      background: #8fd694;
+      color: #ffffff;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .route-item-info {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    .route-item-info-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .route-action {
+      padding: 16px 20px 24px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .route-select-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #8fd694, #7ac37b);
+      color: #ffffff;
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(122, 195, 123, 0.4);
+      font-family: "Sandoll Gothic Neo1", sans-serif;
+    }
+
+    .route-select-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 8px rgba(122, 195, 123, 0.5);
+    }
+
+    .route-select-btn:disabled {
+      background: #e0e0e0;
+      color: #999;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* 토스트 알림 */
+    .toast {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: rgba(0, 0, 0, 0.85);
+      color: #ffffff;
+      padding: 20px 32px;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 500;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      white-space: nowrap;
+      text-align: center;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: all;
+    }
+
+    .toast-icon {
+      font-size: 24px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="device">
+    <div class="screen">
+
+      <!-- 상단 상태바 -->
+      <div class="status-bar">
+        <div class="status-left">--:--</div>
+        <div class="status-right">
+          📶 🔋
+        </div>
+      </div>
+
+      <!-- 러닝 진행 화면 -->
+      <div class="running-screen" aria-label="러닝 진행 화면">
+        <div class="running-map">
+          <button class="ai-route-btn" id="ai-route-btn">
+            🤖 AI 경로추천
+          </button>
+          <div class="map-marker map-current"></div>
+          <div class="running-map-overlay"></div>
+        </div>
+
+        <section class="running-stats">
+          <div class="running-stats-card">
+            <div class="stat-item">
+              <div class="stat-icon">🔥</div>
+              <div class="stat-value">210 kcal</div>
+              <div>칼로리</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">⏱</div>
+              <div class="stat-value">46:12</div>
+              <div>시간</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">👣</div>
+              <div class="stat-value">4,056</div>
+              <div>걸음 수</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon">📏</div>
+              <div class="stat-value">2.1 km</div>
+              <div>거리</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="running-bottom">
+          <button class="running-action-btn running-pause-btn" aria-label="일시정지/재개 버튼">⏸</button>
+          <button class="running-action-btn running-stop-btn" aria-label="러닝 종료 버튼">⏹</button>
+        </div>
+      </div>
+
+      <!-- AI 경로 추천 오버레이 -->
+      <div class="ai-route-overlay" id="ai-route-overlay"></div>
+
+      <!-- 토스트 알림 -->
+      <div class="toast" id="toast">
+        <span class="toast-icon">✅</span>
+        <span id="toast-message"></span>
+      </div>
+
+      <!-- AI 경로 추천 패널 -->
+      <div class="ai-route-panel" id="ai-route-panel">
+        <div class="ai-route-header">
+          <h2 class="ai-route-title">AI 경로 추천</h2>
+          <button class="ai-route-close" id="ai-route-close">×</button>
+        </div>
+        <div class="ai-route-content">
+          <div class="ai-route-map-container"></div>
+          <div class="route-list" id="route-list">
+            <!-- 동적으로 생성됨 -->
+          </div>
+        </div>
+        <div class="route-action">
+          <button class="route-select-btn" id="route-select-btn" disabled>경로 선택</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 상단 상태바 시간 표시
+    (function () {
+      const timeEl = document.querySelector('.status-left');
+      if (!timeEl) return;
+
+      function renderTime() {
+        const now = new Date();
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        timeEl.textContent = `${hours}:${minutes}`;
+      }
+
+      renderTime();
+      setInterval(renderTime, 60000);
+    })();
+
+    // Pause / Stop 버튼 동작
+    (function () {
+      const pauseBtn = document.querySelector('.running-pause-btn');
+      const stopBtn = document.querySelector('.running-stop-btn');
+      if (!pauseBtn || !stopBtn) return;
+
+      // 일시정지/재개 토글
+      pauseBtn.addEventListener('click', () => {
+        const paused = pauseBtn.classList.toggle('paused');
+        pauseBtn.textContent = paused ? '▶' : '⏸';
+      });
+
+      // 완전 정지: 홈 화면으로 이동 (garden_home.html 로 이동)
+      stopBtn.addEventListener('click', () => {
+        window.location.href = 'garden_home.html';
+      });
+    })();
+
+    // AI 경로 추천 기능
+    (function () {
+      const aiRouteBtn = document.getElementById('ai-route-btn');
+      const aiRoutePanel = document.getElementById('ai-route-panel');
+      const aiRouteOverlay = document.getElementById('ai-route-overlay');
+      const aiRouteClose = document.getElementById('ai-route-close');
+      const routeList = document.getElementById('route-list');
+      const routeSelectBtn = document.getElementById('route-select-btn');
+
+      if (!aiRouteBtn || !aiRoutePanel || !aiRouteOverlay || !aiRouteClose || !routeList || !routeSelectBtn) return;
+
+      // 토스트 알림 함수
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+      let toastTimer = null;
+
+      function showToast(message) {
+        if (!toast || !toastMessage) return;
+        toastMessage.textContent = message;
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2000);
+      }
+
+      // 경로 추천 데이터
+      const recommendedRoutes = [
+        {
+          id: 1,
+          name: '공원 코스',
+          distance: '2.5km',
+          time: '약 30분',
+          difficulty: '쉬움',
+          points: '공원 중심 경로'
+        },
+        {
+          id: 2,
+          name: '강변 러닝 코스',
+          distance: '4.0km',
+          time: '약 45분',
+          difficulty: '보통',
+          points: '강변 조깅로'
+        },
+        {
+          id: 3,
+          name: '도심 힐 코스',
+          distance: '3.2km',
+          time: '약 40분',
+          difficulty: '어려움',
+          points: '경사로 포함'
+        }
+      ];
+
+      let selectedRouteId = null;
+
+      // 경로 리스트 렌더링
+      function renderRoutes() {
+        routeList.innerHTML = '';
+        
+        recommendedRoutes.forEach(route => {
+          const item = document.createElement('div');
+          item.className = 'route-item';
+          item.dataset.routeId = route.id;
+          item.innerHTML = `
+            <div class="route-item-header">
+              <div class="route-item-title">${route.name}</div>
+              <div class="route-item-badge">추천</div>
+            </div>
+            <div class="route-item-info">
+              <div class="route-item-info-item">
+                <span>📏</span>
+                <span>${route.distance}</span>
+              </div>
+              <div class="route-item-info-item">
+                <span>⏱</span>
+                <span>${route.time}</span>
+              </div>
+              <div class="route-item-info-item">
+                <span>⚡</span>
+                <span>${route.difficulty}</span>
+              </div>
+            </div>
+          `;
+          
+          item.addEventListener('click', () => {
+            // 선택 상태 토글
+            document.querySelectorAll('.route-item').forEach(r => r.classList.remove('selected'));
+            item.classList.add('selected');
+            selectedRouteId = route.id;
+            routeSelectBtn.disabled = false;
+          });
+          
+          routeList.appendChild(item);
+        });
+      }
+
+      // 패널 열기
+      aiRouteBtn.addEventListener('click', () => {
+        aiRoutePanel.classList.add('open');
+        aiRouteOverlay.classList.add('open');
+        renderRoutes();
+      });
+
+      // 패널 닫기
+      function closePanel() {
+        aiRoutePanel.classList.remove('open');
+        aiRouteOverlay.classList.remove('open');
+        selectedRouteId = null;
+        routeSelectBtn.disabled = true;
+        document.querySelectorAll('.route-item').forEach(r => r.classList.remove('selected'));
+      }
+
+      aiRouteClose.addEventListener('click', closePanel);
+      aiRouteOverlay.addEventListener('click', closePanel);
+
+      // 경로 선택 버튼
+      routeSelectBtn.addEventListener('click', () => {
+        if (!selectedRouteId) return;
+        
+        const selectedRoute = recommendedRoutes.find(r => r.id === selectedRouteId);
+        if (selectedRoute) {
+          showToast(`${selectedRoute.name} 경로가 선택되었습니다!`);
+          closePanel();
+          // 여기에 실제 경로 적용 로직 추가 가능
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>커뮤니티</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Sandoll Gothic Neo1", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: #d6e5cf; /* 연두색 배경 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .device {
+      padding: 14px;
+      border-radius: 46px;
+      background: #dfead1;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .screen {
+      width: 390px;
+      height: 844px;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      background: #d6e5cf; /* 연두색 배경 */
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 8px;
+      left: 0;
+      right: 0;
+      padding: 0 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #222;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .status-left {
+      font-weight: 600;
+    }
+
+    .status-right {
+      display: flex;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .community-root {
+      position: absolute;
+      top: 40px;
+      left: 16px;
+      right: 16px;
+      bottom: 80px;
+      padding: 8px 0 16px;
+      overflow-y: auto;
+    }
+
+    .community-header {
+      font-size: 18px;
+      font-weight: 700;
+      color: #5a402a;
+      margin-bottom: 4px;
+    }
+
+    .community-subtitle {
+      font-size: 12px;
+      color: #8a755f;
+      margin-bottom: 16px;
+    }
+
+    /* 탭 네비게이션 */
+    .community-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .community-tab {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: none;
+      background: rgba(255, 255, 255, 0.7);
+      color: #8a755f;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .community-tab.active {
+      background: #666666;
+      color: #ffffff;
+    }
+
+    /* 피드 카드 공통 스타일 */
+    .feed-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .feed-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .feed-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #e0f0ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .feed-user-info {
+      flex: 1;
+    }
+
+    .feed-username {
+      font-size: 14px;
+      font-weight: 600;
+      color: #5a402a;
+    }
+
+    .feed-time {
+      font-size: 11px;
+      color: #8a755f;
+    }
+
+    .feed-content {
+      font-size: 14px;
+      color: #5a402a;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .feed-image {
+      width: 100%;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      background: #d6e8c7;
+      min-height: 200px;
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* 리액션 버튼들 */
+    .feed-reactions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .reaction-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid #e0e0e0;
+      background: #ffffff;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .reaction-btn:active {
+      transform: scale(0.95);
+    }
+
+    .reaction-btn.active {
+      background: #f0f0f0;
+      border-color: #999999;
+    }
+
+    .reaction-count {
+      font-size: 11px;
+      color: #666;
+      margin-left: 4px;
+    }
+
+    /* 챌린지 카드 */
+    .challenge-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .challenge-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .challenge-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #5a402a;
+    }
+
+    .challenge-stats {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+
+    .challenge-progress {
+      background: #f5f5f5;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #5a402a;
+    }
+
+    /* 코스 공유 카드 */
+    .route-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .route-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .route-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: #5a402a;
+    }
+
+    .route-stars {
+      font-size: 12px;
+    }
+
+    .route-description {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    .route-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .route-tag {
+      padding: 4px 10px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      font-size: 11px;
+      color: #5a402a;
+    }
+
+    /* 질문 카드 */
+    .question-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .question-text {
+      font-size: 14px;
+      color: #5a402a;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    /* 성취 카드 */
+    .achievement-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .achievement-badge {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+
+    .achievement-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #5a402a;
+      margin-bottom: 4px;
+    }
+
+    .achievement-text {
+      font-size: 13px;
+      color: #666;
+    }
+
+    /* 섹션 제목 */
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #5a402a;
+      margin: 20px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    /* 탭별 콘텐츠 필터링 */
+    .content-section {
+      display: none;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    /* 하단 네비게이션 */
+    .bottom-nav {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 6px 10px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+    }
+
+    .nav-item {
+      flex: 1;
+      border: none;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 9px;
+      color: #9f8a72;
+      cursor: pointer;
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      stroke: #9f8a72;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .nav-item.active .nav-icon {
+      stroke: #6a4b32;
+    }
+
+    .nav-item.active {
+      color: #6a4b32;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="device">
+    <div class="screen">
+      <div class="status-bar">
+        <div class="status-left">--:--</div>
+        <div class="status-right">📶 🔋</div>
+      </div>
+
+      <div class="community-root">
+        <h1 class="community-header">커뮤니티</h1>
+        <p class="community-subtitle">함께 달리고 성장하는 우리의 공간</p>
+
+        <!-- 탭 네비게이션 -->
+        <div class="community-tabs">
+          <button class="community-tab active" data-tab="feed">전체</button>
+          <button class="community-tab" data-tab="challenge">챌린지</button>
+          <button class="community-tab" data-tab="route">코스</button>
+          <button class="community-tab" data-tab="question">질문</button>
+        </div>
+
+        <!-- 전체 탭 -->
+        <div class="content-section active" data-section="feed">
+          <!-- 오늘의 인증 피드 -->
+          <div class="section-title">📸 오늘의 인증 피드</div>
+
+        <div class="feed-card">
+          <div class="feed-header">
+            <div class="feed-avatar">🏃‍♀️</div>
+            <div class="feed-user-info">
+              <div class="feed-username">민지</div>
+              <div class="feed-time">2시간 전</div>
+            </div>
+          </div>
+          <div class="feed-content">
+            오늘 2km 완주! 처음이라 힘들었는데 그래도 해냈어요 🌱💪
+          </div>
+          <div class="feed-image" style="background-image: url('지도1.jpg');"></div>
+          <div class="feed-reactions">
+            <button class="reaction-btn" data-reaction="grow">
+              <span>🌱</span>
+              <span class="reaction-count">12</span>
+            </button>
+            <button class="reaction-btn" data-reaction="water">
+              <span>💦</span>
+              <span class="reaction-count">8</span>
+            </button>
+            <button class="reaction-btn" data-reaction="fire">
+              <span>🔥</span>
+              <span class="reaction-count">15</span>
+            </button>
+            <button class="reaction-btn" data-reaction="cheer">
+              <span>🏃</span>
+              <span class="reaction-count">5</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="feed-card">
+          <div class="feed-header">
+            <div class="feed-avatar">🌸</div>
+            <div class="feed-user-info">
+              <div class="feed-username">지은</div>
+              <div class="feed-time">5시간 전</div>
+            </div>
+          </div>
+          <div class="feed-content">
+            내 화분 오늘 꽃 피웠어요! 🌸 정말 뿌듯해요
+          </div>
+          <div class="feed-image" style="background-image: url('꽃1.png'); background-size: contain;"></div>
+          <div class="feed-reactions">
+            <button class="reaction-btn" data-reaction="flower">
+              <span>🌸</span>
+              <span class="reaction-count">23</span>
+            </button>
+            <button class="reaction-btn" data-reaction="grow">
+              <span>🌱</span>
+              <span class="reaction-count">18</span>
+            </button>
+            <button class="reaction-btn" data-reaction="fire">
+              <span>🔥</span>
+              <span class="reaction-count">9</span>
+            </button>
+          </div>
+        </div>
+
+          <!-- 챌린지 참여 현황 -->
+          <div class="section-title">🏆 챌린지 참여 현황</div>
+
+          <div class="challenge-card">
+            <div class="challenge-header">
+              <span class="challenge-title">🌼 7일 연속 걷기 챌린지</span>
+            </div>
+            <div class="challenge-stats">참여자 152명</div>
+            <div class="challenge-progress">
+              나 이번주 3/5회 완료했어요! 같이 할 사람?
+            </div>
+          </div>
+
+          <div class="challenge-card">
+            <div class="challenge-header">
+              <span class="challenge-title">🔥 한 달 50km 달성 챌린지</span>
+            </div>
+            <div class="challenge-stats">참여자 89명</div>
+            <div class="challenge-progress">
+              현재 진행률: 68% (34/50km)
+            </div>
+          </div>
+
+          <!-- 러닝 코스 공유 -->
+          <div class="section-title">🗺 러닝 코스 공유</div>
+
+          <div class="route-card">
+            <div class="route-header">
+              <div class="route-name">📍 한강 밤코스</div>
+              <div class="route-stars">⭐⭐⭐⭐</div>
+            </div>
+            <div class="route-description">
+              조용하고 바람 시원해요! 러닝하기 최고의 코스예요 🌙
+            </div>
+            <div class="route-tags">
+              <span class="route-tag">3km</span>
+              <span class="route-tag">밤 러닝</span>
+              <span class="route-tag">한강</span>
+            </div>
+          </div>
+
+          <div class="route-card">
+            <div class="route-header">
+              <div class="route-name">🧭 동네 산책 루트</div>
+              <div class="route-stars">⭐⭐⭐⭐⭐</div>
+            </div>
+            <div class="route-description">
+              동네 산책 루트 3km — 벚꽃 필 때 꼭 와보세요 🌸
+            </div>
+            <div class="route-tags">
+              <span class="route-tag">3km</span>
+              <span class="route-tag">산책</span>
+              <span class="route-tag">벚꽃</span>
+            </div>
+          </div>
+
+          <!-- 질문 & 소통 -->
+          <div class="section-title">💬 질문 & 소통</div>
+
+          <div class="question-card">
+            <div class="feed-header">
+              <div class="feed-avatar">❓</div>
+              <div class="feed-user-info">
+                <div class="feed-username">초보러너</div>
+                <div class="feed-time">1일 전</div>
+              </div>
+            </div>
+            <div class="question-text">
+              처음 달릴 때 숨차는 거 정상인가요?
+            </div>
+            <div class="feed-reactions">
+              <button class="reaction-btn">
+                <span>💬</span>
+                <span class="reaction-count">8</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="question-card">
+            <div class="feed-header">
+              <div class="feed-avatar">👟</div>
+              <div class="feed-user-info">
+                <div class="feed-username">러닝마니아</div>
+                <div class="feed-time">2일 전</div>
+              </div>
+            </div>
+            <div class="question-text">
+              다들 러닝화 뭐 써요? 추천 부탁드려요!
+            </div>
+            <div class="feed-reactions">
+              <button class="reaction-btn">
+                <span>💬</span>
+                <span class="reaction-count">12</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="question-card">
+            <div class="feed-header">
+              <div class="feed-avatar">🌧</div>
+              <div class="feed-user-info">
+                <div class="feed-username">꾸준히달리기</div>
+                <div class="feed-time">3일 전</div>
+              </div>
+            </div>
+            <div class="question-text">
+              비 오는 날은 어떻게 루틴 유지해요?
+            </div>
+            <div class="feed-reactions">
+              <button class="reaction-btn">
+                <span>💬</span>
+                <span class="reaction-count">15</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 성취 컬렉션 공유 -->
+          <div class="section-title">🏅 성취 컬렉션</div>
+
+        <div class="achievement-card">
+          <div class="achievement-badge">🏅</div>
+          <div class="achievement-title">첫 미션 배지 받았어요!!!</div>
+          <div class="achievement-text">
+            정말 뿌듯해요. 앞으로도 꾸준히 달려볼게요! 💪
+          </div>
+          <div class="feed-reactions" style="margin-top: 10px;">
+            <button class="reaction-btn">
+              <span>🔥</span>
+              <span class="reaction-count">28</span>
+            </button>
+            <button class="reaction-btn">
+              <span>🌱</span>
+              <span class="reaction-count">19</span>
+            </button>
+          </div>
+        </div>
+
+          <div class="achievement-card">
+            <div class="achievement-badge">🌳</div>
+            <div class="achievement-title">정원 레벨 5 달성 🎉</div>
+            <div class="achievement-text">
+              다음 목표는 50km! 화이팅!
+            </div>
+            <div class="feed-reactions" style="margin-top: 10px;">
+              <button class="reaction-btn">
+                <span>🔥</span>
+                <span class="reaction-count">35</span>
+              </button>
+              <button class="reaction-btn">
+                <span>🌸</span>
+                <span class="reaction-count">22</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 챌린지 탭 -->
+        <div class="content-section" data-section="challenge">
+          <div class="section-title">🏆 챌린지 참여 현황</div>
+
+          <div class="challenge-card">
+            <div class="challenge-header">
+              <span class="challenge-title">🌼 7일 연속 걷기 챌린지</span>
+            </div>
+            <div class="challenge-stats">참여자 152명</div>
+            <div class="challenge-progress">
+              나 이번주 3/5회 완료했어요! 같이 할 사람?
+            </div>
+          </div>
+
+          <div class="challenge-card">
+            <div class="challenge-header">
+              <span class="challenge-title">🔥 한 달 50km 달성 챌린지</span>
+            </div>
+            <div class="challenge-stats">참여자 89명</div>
+            <div class="challenge-progress">
+              현재 진행률: 68% (34/50km)
+            </div>
+          </div>
+        </div>
+
+        <!-- 코스 탭 -->
+        <div class="content-section" data-section="route">
+          <div class="section-title">🗺 러닝 코스 공유</div>
+
+          <div class="route-card">
+            <div class="route-header">
+              <div class="route-name">📍 한강 밤코스</div>
+              <div class="route-stars">⭐⭐⭐⭐</div>
+            </div>
+            <div class="route-description">
+              조용하고 바람 시원해요! 러닝하기 최고의 코스예요 🌙
+            </div>
+            <div class="route-tags">
+              <span class="route-tag">3km</span>
+              <span class="route-tag">밤 러닝</span>
+              <span class="route-tag">한강</span>
+            </div>
+          </div>
+
+          <div class="route-card">
+            <div class="route-header">
+              <div class="route-name">🧭 동네 산책 루트</div>
+              <div class="route-stars">⭐⭐⭐⭐⭐</div>
+            </div>
+            <div class="route-description">
+              동네 산책 루트 3km — 벚꽃 필 때 꼭 와보세요 🌸
+            </div>
+            <div class="route-tags">
+              <span class="route-tag">3km</span>
+              <span class="route-tag">산책</span>
+              <span class="route-tag">벚꽃</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 질문 탭 -->
+        <div class="content-section" data-section="question">
+          <div class="section-title">💬 질문 & 소통</div>
+
+          <div class="question-card">
+            <div class="feed-header">
+              <div class="feed-avatar">❓</div>
+              <div class="feed-user-info">
+                <div class="feed-username">초보러너</div>
+                <div class="feed-time">1일 전</div>
+              </div>
+            </div>
+            <div class="question-text">
+              처음 달릴 때 숨차는 거 정상인가요?
+            </div>
+            <div class="feed-reactions">
+              <button class="reaction-btn">
+                <span>💬</span>
+                <span class="reaction-count">8</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="question-card">
+            <div class="feed-header">
+              <div class="feed-avatar">👟</div>
+              <div class="feed-user-info">
+                <div class="feed-username">러닝마니아</div>
+                <div class="feed-time">2일 전</div>
+              </div>
+            </div>
+            <div class="question-text">
+              다들 러닝화 뭐 써요? 추천 부탁드려요!
+            </div>
+            <div class="feed-reactions">
+              <button class="reaction-btn">
+                <span>💬</span>
+                <span class="reaction-count">12</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="question-card">
+            <div class="feed-header">
+              <div class="feed-avatar">🌧</div>
+              <div class="feed-user-info">
+                <div class="feed-username">꾸준히달리기</div>
+                <div class="feed-time">3일 전</div>
+              </div>
+            </div>
+            <div class="question-text">
+              비 오는 날은 어떻게 루틴 유지해요?
+            </div>
+            <div class="feed-reactions">
+              <button class="reaction-btn">
+                <span>💬</span>
+                <span class="reaction-count">15</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 하단 네비게이션 -->
+      <nav class="bottom-nav">
+        <button class="nav-item" data-tab="home" aria-label="홈">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 11.5L12 4l8 7.5" />
+            <path d="M7.5 10.5V20h9v-9.5" />
+          </svg>
+          <span>홈</span>
+        </button>
+        <button class="nav-item" data-tab="mission" aria-label="미션">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="7" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 5V3" />
+            <path d="M19 12h2" />
+            <path d="M12 21v-2" />
+            <path d="M3 12h2" />
+          </svg>
+          <span>미션</span>
+        </button>
+        <button class="nav-item" data-tab="shop" aria-label="상점">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="5" y="8" width="14" height="11" rx="2" />
+            <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+          </svg>
+          <span>상점</span>
+        </button>
+        <button class="nav-item active" data-tab="neighbors" aria-label="이웃">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="9" cy="10" r="3" />
+            <path d="M4 18c0-2.2 2-4 5-4" />
+            <circle cx="17" cy="11" r="2.5" />
+            <path d="M14 18c0-1.8 1.7-3.3 4-3.3" />
+          </svg>
+          <span>이웃</span>
+        </button>
+        <button class="nav-item" data-tab="my" aria-label="MY">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="9" r="3" />
+            <path d="M6.5 19.5c.7-2.3 2.7-4 5.5-4s4.8 1.7 5.5 4" />
+          </svg>
+          <span>MY</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    // 상태바 시간 표시
+    (function () {
+      const timeEl = document.querySelector('.status-left');
+      if (!timeEl) return;
+
+      function renderTime() {
+        const now = new Date();
+        const h = now.getHours().toString().padStart(2, '0');
+        const m = now.getMinutes().toString().padStart(2, '0');
+        timeEl.textContent = `${h}:${m}`;
+      }
+
+      renderTime();
+      setInterval(renderTime, 60000);
+    })();
+
+    // 탭 네비게이션 및 필터링
+    (function () {
+      const tabs = document.querySelectorAll('.community-tab');
+      const sections = document.querySelectorAll('.content-section');
+      if (!tabs.length || !sections.length) return;
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.dataset.tab;
+          
+          // 모든 탭 비활성화
+          tabs.forEach(t => t.classList.remove('active'));
+          // 선택된 탭 활성화
+          tab.classList.add('active');
+          
+          // 모든 섹션 숨기기
+          sections.forEach(section => {
+            section.classList.remove('active');
+          });
+          
+          // 선택된 탭에 해당하는 섹션 표시
+          const targetSection = document.querySelector(`.content-section[data-section="${tabName}"]`);
+          if (targetSection) {
+            targetSection.classList.add('active');
+          }
+        });
+      });
+    })();
+
+    // 리액션 버튼 클릭
+    (function () {
+      const reactionBtns = document.querySelectorAll('.reaction-btn');
+      reactionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          btn.classList.toggle('active');
+          const countEl = btn.querySelector('.reaction-count');
+          if (countEl) {
+            let count = parseInt(countEl.textContent);
+            if (btn.classList.contains('active')) {
+              count += 1;
+            } else {
+              count = Math.max(0, count - 1);
+            }
+            countEl.textContent = count;
+          }
+        });
+      });
+    })();
+
+    // 하단 네비게이션
+    (function () {
+      const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      if (!navItems.length) return;
+
+      navItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          const tab = item.dataset.tab;
+
+          if (tab === 'home') {
+            window.location.href = 'garden_home.html';
+            return;
+          }
+          if (tab === 'mission') {
+            window.location.href = 'mission_screen.html';
+            return;
+          }
+          if (tab === 'shop') {
+            window.location.href = 'shop_screen.html';
+            return;
+          }
+          if (tab === 'neighbors') {
+            window.location.href = 'neighbors_screen.html';
+            return;
+          }
+          if (tab === 'my') {
+            window.location.href = 'my_screen.html';
+            return;
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
+

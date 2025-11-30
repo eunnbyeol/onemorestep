@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>온보딩</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Sandoll Gothic Neo1", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: #d6e5cf; /* 연두색 배경 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .device {
+      padding: 14px;
+      border-radius: 46px;
+      background: #dfead1;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .screen {
+      width: 390px;
+      height: 844px;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      background: #d6e5cf; /* 연두색 배경 */
+      display: flex;
+      flex-direction: column;
+      padding: 60px 24px 40px;
+    }
+
+    .onboarding-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .onboarding-page {
+      display: none;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .onboarding-page.active {
+      display: flex;
+    }
+
+    .question-header {
+      text-align: center;
+    }
+
+    .question-number {
+      font-size: 14px;
+      color: #8a755f;
+      margin-bottom: 12px;
+    }
+
+    .question-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #5a402a;
+      line-height: 1.4;
+    }
+
+    .question-subtitle {
+      font-size: 13px;
+      color: #8a755f;
+      margin-top: 8px;
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .option-btn {
+      width: 100%;
+      padding: 18px 20px;
+      border-radius: 16px;
+      border: 2px solid #e0e0e0;
+      background: #ffffff;
+      font-size: 16px;
+      color: #5a402a;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      font-family: "Sandoll Gothic Neo1", sans-serif;
+    }
+
+    .option-btn:hover {
+      border-color: #8fd694;
+      background: #f8f9f8;
+    }
+
+    .option-btn:active {
+      transform: scale(0.98);
+    }
+
+    .option-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .option-text {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #8fd694;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .skip-btn {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .skip-btn a {
+      color: #8a755f;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .skip-btn a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="device">
+    <div class="screen">
+      <div class="onboarding-container">
+        <!-- 질문 1: 러닝 경험 -->
+        <div class="onboarding-page active" data-page="1">
+          <div class="question-header">
+            <div class="question-number">질문 1 / 4</div>
+            <div class="question-title">지금 러닝을<br />얼마나 해봤나요?</div>
+            <div class="question-subtitle">경험 기반 레벨 체크</div>
+          </div>
+
+          <div class="options-list">
+            <button class="option-btn" data-value="beginner">
+              <span class="option-icon">🐣</span>
+              <span class="option-text">거의 안 해봤어요</span>
+            </button>
+            <button class="option-btn" data-value="casual">
+              <span class="option-icon">🙂</span>
+              <span class="option-text">가끔 뛰어본 적은 있어요</span>
+            </button>
+            <button class="option-btn" data-value="regular">
+              <span class="option-icon">🏃</span>
+              <span class="option-text">주 2~3회 정도 하고 있어요</span>
+            </button>
+            <button class="option-btn" data-value="advanced">
+              <span class="option-icon">🔥</span>
+              <span class="option-text">꾸준히 러닝하고 있어요</span>
+            </button>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 25%;"></div>
+          </div>
+        </div>
+
+        <!-- 질문 2: 거리/시간 -->
+        <div class="onboarding-page" data-page="2">
+          <div class="question-header">
+            <div class="question-number">질문 2 / 4</div>
+            <div class="question-title">평소 한 번 달릴 때<br />어느 정도 거리/시간이<br />편한가요?</div>
+            <div class="question-subtitle">패턴 기반, 실제 러닝 수치화</div>
+          </div>
+
+          <div class="options-list">
+            <button class="option-btn" data-value="short">
+              <span class="option-icon">🚶</span>
+              <span class="option-text">1km 이하 or 10~15분</span>
+            </button>
+            <button class="option-btn" data-value="medium">
+              <span class="option-icon">🏃</span>
+              <span class="option-text">2~4km or 20~40분</span>
+            </button>
+            <button class="option-btn" data-value="long">
+              <span class="option-icon">🏃‍♂️</span>
+              <span class="option-text">5~7km or 40~60분</span>
+            </button>
+            <button class="option-btn" data-value="very-long">
+              <span class="option-icon">🔥</span>
+              <span class="option-text">8km 이상 or 1시간 이상</span>
+            </button>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 50%;"></div>
+          </div>
+        </div>
+
+        <!-- 질문 3: 러닝 스타일 -->
+        <div class="onboarding-page" data-page="3">
+          <div class="question-header">
+            <div class="question-number">질문 3 / 4</div>
+            <div class="question-title">러닝 스타일은<br />어떤 게 더 좋아요?</div>
+            <div class="question-subtitle">미션 구성 방향 결정</div>
+          </div>
+
+          <div class="options-list">
+            <button class="option-btn" data-value="relaxed">
+              <span class="option-icon">😌</span>
+              <span class="option-text">천천히, 편안하게</span>
+            </button>
+            <button class="option-btn" data-value="steady">
+              <span class="option-icon">🙂</span>
+              <span class="option-text">일정 속도로 꾸준히</span>
+            </button>
+            <button class="option-btn" data-value="moderate">
+              <span class="option-icon">🏃</span>
+              <span class="option-text">페이스 유지 + 조금 도전</span>
+            </button>
+            <button class="option-btn" data-value="intense">
+              <span class="option-icon">🔥</span>
+              <span class="option-text">기록 향상/속도 목표</span>
+            </button>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 75%;"></div>
+          </div>
+        </div>
+
+        <!-- 질문 4: 러닝 목표 -->
+        <div class="onboarding-page" data-page="4">
+          <div class="question-header">
+            <div class="question-number">질문 4 / 4</div>
+            <div class="question-title">당신의 러닝 목표는<br />무엇인가요?</div>
+            <div class="question-subtitle">미션 톤·보상 방식 결정</div>
+          </div>
+
+          <div class="options-list">
+            <button class="option-btn" data-value="health">
+              <span class="option-icon">💪</span>
+              <span class="option-text">건강/체력 만들기</span>
+            </button>
+            <button class="option-btn" data-value="diet">
+              <span class="option-icon">🎯</span>
+              <span class="option-text">다이어트 / 체형 관리</span>
+            </button>
+            <button class="option-btn" data-value="habit">
+              <span class="option-icon">📅</span>
+              <span class="option-text">습관 만들기</span>
+            </button>
+            <button class="option-btn" data-value="record">
+              <span class="option-icon">🏆</span>
+              <span class="option-text">기록 향상 / 대회 준비</span>
+            </button>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 100%;"></div>
+          </div>
+        </div>
+
+        <div class="skip-btn">
+          <a href="garden_home.html" id="skip-link">건너뛰기</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 온보딩 데이터 저장
+    const onboardingData = {
+      experience: null,
+      distance: null,
+      style: null,
+      goal: null
+    };
+
+    let currentPage = 1;
+    const totalPages = 4;
+
+    // 모든 옵션 버튼에 이벤트 리스너 추가
+    document.querySelectorAll('.option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const page = btn.closest('.onboarding-page');
+        const pageNum = parseInt(page.dataset.page);
+        const value = btn.dataset.value;
+
+        // 데이터 저장
+        if (pageNum === 1) {
+          onboardingData.experience = value;
+        } else if (pageNum === 2) {
+          onboardingData.distance = value;
+        } else if (pageNum === 3) {
+          onboardingData.style = value;
+        } else if (pageNum === 4) {
+          onboardingData.goal = value;
+        }
+
+        // 다음 페이지로 이동
+        if (pageNum < totalPages) {
+          showPage(pageNum + 1);
+        } else {
+          // 마지막 질문이면 홈 화면으로 이동
+          // 여기서 데이터를 저장하거나 서버로 전송할 수 있습니다
+          console.log('온보딩 완료:', onboardingData);
+          window.location.href = 'garden_home.html';
+        }
+      });
+    });
+
+    // 페이지 표시 함수
+    function showPage(pageNum) {
+      document.querySelectorAll('.onboarding-page').forEach(page => {
+        page.classList.remove('active');
+      });
+      
+      const targetPage = document.querySelector(`.onboarding-page[data-page="${pageNum}"]`);
+      if (targetPage) {
+        targetPage.classList.add('active');
+        currentPage = pageNum;
+      }
+    }
+  </script>
+</body>
+</html>
+

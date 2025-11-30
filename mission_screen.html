@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>오늘의 미션</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Sandoll Gothic Neo1", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: #d6e5cf; /* 세이지 그린 톤 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* 📱 아이폰 프레임 */
+    .device {
+      padding: 14px;
+      border-radius: 46px;
+      background: #dfead1;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    /* 실제 화면 영역 */
+    .screen {
+      width: 390px;
+      height: 844px; /* 아이폰 화면 높이 고정 */
+      border-radius: 36px;
+      position: relative;
+      background: #d6e5cf; /* 세이지 그린 톤으로 통일 */
+      overflow: hidden; /* 여기서 스크롤 안 함 */
+    }
+
+    /* 상단 상태바 */
+    .status-bar {
+      position: absolute;
+      top: 8px;
+      left: 0;
+      right: 0;
+      padding: 0 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #222;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .status-left {
+      font-weight: 600;
+    }
+
+    .status-right {
+      display: flex;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    /* 상단 타이틀 영역 */
+    .missions-root {
+      position: absolute;
+      top: 40px; /* 상태바 조금 아래부터 시작 */
+      left: 16px;
+      right: 16px;
+      bottom: 80px; /* 하단바 + 여유 공간만큼 띄우기 */
+      padding: 8px 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto; /* 여기서만 스크롤 */
+    }
+
+    .missions-header {
+      margin-top: 16px;
+      margin-bottom: 2px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #5a402a;
+    }
+
+    .missions-subtitle {
+      font-size: 12px;
+      color: #8a755f;
+      margin-bottom: 8px;
+    }
+
+    /* 오늘 화분 메인 카드 (화면 약 55~60% 차지) */
+    .today-pot-card {
+      flex: 0 0 56%;
+      border-radius: 26px;
+      background: linear-gradient(145deg, #ddebd0, #c8dfba);
+      padding: 18px 20px 18px;
+      box-shadow: 0 10px 22px rgba(133, 167, 115, 0.35);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .today-pot-header {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .today-pot-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #5a402a;
+    }
+
+    .today-pot-sub {
+      font-size: 12px;
+      color: #7e6a52;
+    }
+
+    .today-pot-illust-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .today-pot-illust {
+      width: 170px;
+      height: 170px;
+      border-radius: 36px;
+      background: radial-gradient(circle at 30% 20%, #ffffff 0, #f6ffe9 45%, #d8f2c6 90%);
+      box-shadow: 0 12px 26px rgba(115, 153, 95, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .today-pot-img {
+      max-width: 100%;
+      max-height: 100%;
+      height: auto;
+      width: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    .today-pot-progress {
+      width: 100%;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .today-pot-progress-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #6a4b32;
+    }
+
+    .today-pot-current {
+      font-weight: 600;
+    }
+
+    .today-pot-goal {
+      opacity: 0.8;
+    }
+
+    .progress-bar {
+      position: relative;
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: #ecddc9; /* 살짝 더 탁한 크림 */
+      overflow: hidden;
+      box-shadow: inset 0 2px 3px rgba(190, 155, 113, 0.35);
+    }
+
+    .progress-fill {
+      position: absolute;
+      inset: 0;
+      width: 60%;
+      background: linear-gradient(90deg, #7fca86, #6ab875);
+      transition: width 0.2s ease-out;
+    }
+
+    /* 섹션 공통 */
+    .mission-section {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mission-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #6a4b32;
+    }
+
+    .mission-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .mission-card {
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.97);
+      padding: 10px 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .mission-card:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+    }
+
+    .mission-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mission-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6a4b32;
+    }
+
+    .mission-card-reward {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #f6f2e7;
+      color: #8a755f;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .mission-card-reward-icon {
+      font-size: 12px;
+    }
+
+    .mission-card-progress-text {
+      font-size: 11px;
+      color: #9f8a72;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .mission-card-bar {
+      margin-top: 4px;
+      height: 6px;
+      border-radius: 999px;
+      background: #efe4d2;
+      overflow: hidden;
+    }
+
+    .mission-card-bar-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #8fd694, #7ac37b);
+    }
+
+    /* 하단 내비게이션 + Go 버튼 (Home과 동일 스타일) */
+    .bottom-nav {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 10px;
+      border-radius: 20px;
+      background: rgba(247, 244, 235, 0.98);
+      padding: 6px 10px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 3px 8px rgba(171, 187, 135, 0.4);
+      z-index: 4;
+    }
+
+    .nav-item {
+      flex: 1;
+      border: none;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 9px;
+      color: #9f8a72;
+      cursor: pointer;
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      stroke: #9f8a72;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .nav-item.active .nav-icon {
+      stroke: #6a4b32;
+    }
+
+    .nav-item.active {
+      color: #6a4b32;
+      font-weight: 600;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="device">
+    <div class="screen">
+
+      <!-- 상단 상태바 -->
+      <div class="status-bar">
+        <div class="status-left">--:--</div>
+        <div class="status-right">📶 🔋</div>
+      </div>
+
+      <!-- 오늘의 미션 루트 -->
+      <div class="missions-root">
+        <h1 class="missions-header">오늘의 미션</h1>
+        <p class="missions-subtitle">오늘 자라는 화분과 주간·월간 미션을 확인해보세요.</p>
+
+        <!-- 오늘 화분 메인 카드 -->
+        <section class="today-pot-card">
+          <div class="today-pot-header">
+            <div class="today-pot-title">오늘 자라는 화분</div>
+            <div class="today-pot-sub">오늘의 튤립 3단계 · 완성까지 1.5km 남았어요</div>
+          </div>
+          <div class="today-pot-illust-wrapper">
+            <div class="today-pot-illust">
+              <img src="튤립.png" alt="오늘 자라는 튤립 화분" class="today-pot-img" />
+            </div>
+          </div>
+          <div class="today-pot-progress">
+            <div class="today-pot-progress-top">
+              <span class="today-pot-current">2.3km</span>
+              <span class="today-pot-goal">3.8km</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 60%;"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 이번주 미션 섹션 -->
+        <section class="mission-section">
+          <h2 class="mission-section-title">이번주 미션</h2>
+          <div class="mission-cards">
+            <article class="mission-card">
+              <div class="mission-card-header">
+                <div class="mission-card-title">주 3일 이상 5,000보 달성</div>
+                <div class="mission-card-reward">
+                  <span class="mission-card-reward-icon">💧</span>
+                  + 20
+                </div>
+              </div>
+              <div class="mission-card-progress-text">
+                <span>이번주 2일 달성</span>
+                <span>2 / 3일</span>
+              </div>
+              <div class="mission-card-bar">
+                <div class="mission-card-bar-fill" style="width: 66%;"></div>
+              </div>
+            </article>
+
+            <article class="mission-card">
+              <div class="mission-card-header">
+                <div class="mission-card-title">정원 물주기 5회</div>
+                <div class="mission-card-reward">
+                  <span class="mission-card-reward-icon">🌱</span>
+                  + 50P
+                </div>
+              </div>
+              <div class="mission-card-progress-text">
+                <span>오늘까지 3회 완료</span>
+                <span>3 / 5회</span>
+              </div>
+              <div class="mission-card-bar">
+                <div class="mission-card-bar-fill" style="width: 60%;"></div>
+              </div>
+            </article>
+
+            <article class="mission-card">
+              <div class="mission-card-header">
+                <div class="mission-card-title">이번 주 2번, 10분 러닝</div>
+                <div class="mission-card-reward">
+                  <span class="mission-card-reward-icon">💧</span>
+                  + 30
+                </div>
+              </div>
+              <div class="mission-card-progress-text">
+                <span>오늘까지 1회 완료</span>
+                <span>1 / 2회</span>
+              </div>
+              <div class="mission-card-bar">
+                <div class="mission-card-bar-fill" style="width: 50%;"></div>
+              </div>
+            </article>
+
+            <article class="mission-card">
+              <div class="mission-card-header">
+                <div class="mission-card-title">AI 추천 코스 1회 수행</div>
+                <div class="mission-card-reward">
+                  <span class="mission-card-reward-icon">🌱</span>
+                  + 40P
+                </div>
+              </div>
+              <div class="mission-card-progress-text">
+                <span>아직 수행하지 않았어요</span>
+                <span>0 / 1회</span>
+              </div>
+              <div class="mission-card-bar">
+                <div class="mission-card-bar-fill" style="width: 0%;"></div>
+              </div>
+            </article>
+
+            <article class="mission-card">
+              <div class="mission-card-header">
+                <div class="mission-card-title">한 번에 2km 이어 달리기</div>
+                <div class="mission-card-reward">
+                  <span class="mission-card-reward-icon">💧</span>
+                  + 35
+                </div>
+              </div>
+              <div class="mission-card-progress-text">
+                <span>최대 1.5km 달성</span>
+                <span>1.5 / 2km</span>
+              </div>
+              <div class="mission-card-bar">
+                <div class="mission-card-bar-fill" style="width: 75%;"></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- 이번달 미션 섹션 -->
+        <section class="mission-section">
+          <h2 class="mission-section-title">이번달 미션</h2>
+          <div class="mission-cards">
+            <article class="mission-card">
+              <div class="mission-card-header">
+                <div class="mission-card-title">한 달 누적 50km 걷기</div>
+                <div class="mission-card-reward">
+                  <span class="mission-card-reward-icon">🌱</span>
+                  + 150P
+                </div>
+              </div>
+              <div class="mission-card-progress-text">
+                <span>지금까지 32km 걸었어요</span>
+                <span>32 / 50km</span>
+              </div>
+              <div class="mission-card-bar">
+                <div class="mission-card-bar-fill" style="width: 64%;"></div>
+              </div>
+            </article>
+
+            <article class="mission-card">
+              <div class="mission-card-header">
+                <div class="mission-card-title">꽃 완성하기 10개</div>
+                <div class="mission-card-reward">
+                  <span class="mission-card-reward-icon">💧</span>
+                  + 50
+                </div>
+              </div>
+              <div class="mission-card-progress-text">
+                <span>현재까지 7개 완성</span>
+                <span>7 / 10개</span>
+              </div>
+              <div class="mission-card-bar">
+                <div class="mission-card-bar-fill" style="width: 70%;"></div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </div>
+
+      <!-- 미션 화면 하단 내비게이션 + Go 버튼 -->
+      <nav class="bottom-nav">
+        <!-- HOME: 집 아이콘 -->
+        <button class="nav-item" data-tab="home" aria-label="홈">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 11.5L12 4l8 7.5" />
+            <path d="M7.5 10.5V20h9v-9.5" />
+          </svg>
+          <span>홈</span>
+        </button>
+
+        <!-- 미션: 과녁/타겟 아이콘 (활성) -->
+        <button class="nav-item active" data-tab="mission" aria-label="미션">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="7" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 5V3" />
+            <path d="M19 12h2" />
+            <path d="M12 21v-2" />
+            <path d="M3 12h2" />
+          </svg>
+          <span>미션</span>
+        </button>
+
+        <!-- 상점: 쇼핑백 아이콘 -->
+        <button class="nav-item" data-tab="shop" aria-label="상점">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="5" y="8" width="14" height="11" rx="2" />
+            <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+          </svg>
+          <span>상점</span>
+        </button>
+
+        <!-- 이웃: 사람 두 명 아이콘 -->
+        <button class="nav-item" data-tab="neighbors" aria-label="이웃">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="9" cy="10" r="3" />
+            <path d="M4 18c0-2.2 2-4 5-4" />
+            <circle cx="17" cy="11" r="2.5" />
+            <path d="M14 18c0-1.8 1.7-3.3 4-3.3" />
+          </svg>
+          <span>이웃</span>
+        </button>
+
+        <!-- MY: 사람 실루엣 아이콘 -->
+        <button class="nav-item" data-tab="my" aria-label="MY">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="9" r="3" />
+            <path d="M6.5 19.5c.7-2.3 2.7-4 5.5-4s4.8 1.7 5.5 4" />
+          </svg>
+          <span>MY</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    // 상태바 현재 시간 갱신
+    (function () {
+      const timeEl = document.querySelector('.status-left');
+      if (!timeEl) return;
+
+      function renderTime() {
+        const now = new Date();
+        const h = now.getHours().toString().padStart(2, '0');
+        const m = now.getMinutes().toString().padStart(2, '0');
+        timeEl.textContent = `${h}:${m}`;
+      }
+
+      renderTime();
+      setInterval(renderTime, 60000);
+    })();
+
+    // 미션 화면 하단 내비게이션 동작
+    (function () {
+      const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      if (!navItems.length) return;
+
+      navItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          const tab = item.dataset.tab;
+
+          if (tab === 'home') {
+            window.location.href = 'garden_home.html';
+            return;
+          }
+          if (tab === 'mission') {
+            window.location.href = 'mission_screen.html';
+            return;
+          }
+          if (tab === 'shop') {
+            window.location.href = 'shop_screen.html';
+            return;
+          }
+          if (tab === 'neighbors') {
+            window.location.href = 'neighbors_screen.html';
+            return;
+          }
+          if (tab === 'my') {
+            window.location.href = 'my_screen.html';
+            return;
+          }
+        });
+      });
+    })();
+
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>이웃 정원</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Sandoll Gothic Neo1", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: #d6e5cf; /* 연두색 배경 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .device {
+      padding: 14px;
+      border-radius: 46px;
+      background: #dfead1;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .screen {
+      width: 390px;
+      height: 844px;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      background: #d6e5cf; /* 연두색 배경 */
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 8px;
+      left: 0;
+      right: 0;
+      padding: 0 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #222;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .status-left {
+      font-weight: 600;
+    }
+
+    .status-right {
+      display: flex;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .neighbors-root {
+      position: absolute;
+      top: 40px;
+      left: 16px;
+      right: 16px;
+      bottom: 80px;
+      padding: 8px 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .neighbors-header {
+      font-size: 18px;
+      font-weight: 700;
+      color: #35506a;
+    }
+
+    .neighbors-subtitle {
+      font-size: 12px;
+      color: #6d8196;
+      margin-bottom: 8px;
+    }
+
+    .neighbor-card {
+      border-radius: 20px;
+      background: #ffffff; /* 단순한 흰색, 틴트 제거 */
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .neighbor-card:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+    }
+
+    .neighbor-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .neighbor-profile {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .neighbor-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #e0f0ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .neighbor-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #35506a;
+    }
+
+    .neighbor-level {
+      font-size: 11px;
+      color: #7b8fa1;
+    }
+
+    .neighbor-badge {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #eef5ff;
+      font-size: 10px;
+      color: #56729a;
+    }
+
+    .neighbor-garden-preview {
+      margin-top: 4px;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .neighbor-garden-image {
+      width: 100%;
+      height: 240px; /* 이미지가 잘리지 않도록 높이 증가 */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #d6e8c7;
+    }
+
+    .neighbor-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #7b8fa1;
+      gap: 8px;
+    }
+
+    .neighbor-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .neighbor-action {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: none;
+      background: #35506a;
+      color: #ffffff;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.1s ease;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.18);
+    }
+
+    .neighbor-action:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24);
+    }
+
+    .neighbor-action.clicked {
+      background: #9e9e9e; /* 중립적인 회색 */
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      cursor: default;
+    }
+
+    /* 커뮤니티 섹션 */
+    .community-section {
+      margin-top: 12px;
+    }
+
+    .community-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 20px;
+      background: #666666; /* 단순한 회색, 그라데이션 제거 */
+      border: none;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+      font-family: "Sandoll Gothic Neo1", sans-serif;
+    }
+
+    .community-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .community-icon {
+      font-size: 20px;
+    }
+
+    .community-text {
+      font-size: 16px;
+    }
+
+    /* 포인트 알림 토스트 */
+    .neighbors-toast {
+      position: absolute;
+      left: 50%;
+      bottom: 70px;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 11px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+    }
+
+    .neighbors-toast.show {
+      opacity: 1;
+    }
+
+    /* 하단 내비게이션 */
+    .bottom-nav {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 10px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.98);
+      padding: 6px 10px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 4;
+    }
+
+    .nav-item {
+      flex: 1;
+      border: none;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 9px;
+      color: #9f8a72;
+      cursor: pointer;
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      stroke: #9f8a72;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .nav-item.active .nav-icon {
+      stroke: #6a4b32;
+    }
+
+    .nav-item.active {
+      color: #6a4b32;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="device">
+    <div class="screen">
+      <div class="status-bar">
+        <div class="status-left">--:--</div>
+        <div class="status-right">📶 🔋</div>
+      </div>
+
+      <div class="neighbors-root">
+        <h1 class="neighbors-header">이웃 정원</h1>
+        <p class="neighbors-subtitle">친구들의 정원을 구경하고 응원 메시지를 남겨보세요.</p>
+
+        <section class="neighbor-card">
+          <div class="neighbor-top">
+            <div class="neighbor-profile">
+              <div class="neighbor-avatar">🐱</div>
+              <div>
+                <div class="neighbor-name">민지님 정원</div>
+                <div class="neighbor-level">정원 레벨 4 · 맑음</div>
+              </div>
+            </div>
+            <span class="neighbor-badge">오늘 7,200보</span>
+          </div>
+          <div class="neighbor-garden-preview">
+            <div class="neighbor-garden-image" style="background-image: url('배경1.jpg');"></div>
+          </div>
+          <div class="neighbor-footer">
+            <span>“오늘 꽃이 두 송이 더 피었어요!”</span>
+            <div class="neighbor-actions">
+              <button class="neighbor-action" data-action="cheer" data-user="minji">응원하기</button>
+              <button class="neighbor-action" data-action="visit" data-user="minji">방문하기</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="neighbor-card">
+          <div class="neighbor-top">
+            <div class="neighbor-profile">
+              <div class="neighbor-avatar">🐻</div>
+              <div>
+                <div class="neighbor-name">준호님 정원</div>
+                <div class="neighbor-level">정원 레벨 2 · 흐림</div>
+              </div>
+            </div>
+            <span class="neighbor-badge">오늘 3,100보</span>
+          </div>
+          <div class="neighbor-garden-preview">
+            <div class="neighbor-garden-image" style="background-image: url('배경2.jpg');"></div>
+          </div>
+          <div class="neighbor-footer">
+            <span>“이번 주에 튤립 완성 도전 중!”</span>
+            <div class="neighbor-actions">
+              <button class="neighbor-action" data-action="cheer" data-user="junho">응원하기</button>
+              <button class="neighbor-action" data-action="visit" data-user="junho">방문하기</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 커뮤니티 버튼 -->
+        <section class="community-section">
+          <button class="community-btn" id="community-btn">
+            <span class="community-icon">👥</span>
+            <span class="community-text">커뮤니티</span>
+          </button>
+        </section>
+      </div>
+
+      <!-- 포인트 획득 안내 토스트 -->
+      <div class="neighbors-toast" id="neighbors-toast">포인트를 얻었습니다!</div>
+
+      <nav class="bottom-nav">
+        <button class="nav-item" data-tab="home" aria-label="홈">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 11.5L12 4l8 7.5" />
+            <path d="M7.5 10.5V20h9v-9.5" />
+          </svg>
+          <span>홈</span>
+        </button>
+        <button class="nav-item" data-tab="mission" aria-label="미션">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="7" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 5V3" />
+            <path d="M19 12h2" />
+            <path d="M12 21v-2" />
+            <path d="M3 12h2" />
+          </svg>
+          <span>미션</span>
+        </button>
+        <button class="nav-item" data-tab="shop" aria-label="상점">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="5" y="8" width="14" height="11" rx="2" />
+            <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+          </svg>
+          <span>상점</span>
+        </button>
+        <button class="nav-item active" data-tab="neighbors" aria-label="이웃">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="9" cy="10" r="3" />
+            <path d="M4 18c0-2.2 2-4 5-4" />
+            <circle cx="17" cy="11" r="2.5" />
+            <path d="M14 18c0-1.8 1.7-3.3 4-3.3" />
+          </svg>
+          <span>이웃</span>
+        </button>
+        <button class="nav-item" data-tab="my" aria-label="MY">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="9" r="3" />
+            <path d="M6.5 19.5c.7-2.3 2.7-4 5.5-4s4.8 1.7 5.5 4" />
+          </svg>
+          <span>MY</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const timeEl = document.querySelector('.status-left');
+      if (!timeEl) return;
+
+      function renderTime() {
+        const now = new Date();
+        const h = now.getHours().toString().padStart(2, '0');
+        const m = now.getMinutes().toString().padStart(2, '0');
+        timeEl.textContent = `${h}:${m}`;
+      }
+
+      renderTime();
+      setInterval(renderTime, 60000);
+    })();
+
+    // 하단 내비게이션 이동
+    (function () {
+      const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      if (!navItems.length) return;
+
+      navItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          const tab = item.dataset.tab;
+
+          if (tab === 'home') {
+            window.location.href = 'garden_home.html';
+            return;
+          }
+          if (tab === 'mission') {
+            window.location.href = 'mission_screen.html';
+            return;
+          }
+          if (tab === 'shop') {
+            window.location.href = 'shop_screen.html';
+            return;
+          }
+          if (tab === 'neighbors') {
+            window.location.href = 'neighbors_screen.html';
+            return;
+          }
+          if (tab === 'my') {
+            window.location.href = 'my_screen.html';
+            return;
+          }
+        });
+      });
+    })();
+
+    // 응원하기 / 방문하기 버튼 → 클릭 상태 + 포인트 토스트
+    (function () {
+      const buttons = document.querySelectorAll('.neighbor-action');
+      const toast = document.getElementById('neighbors-toast');
+      if (!buttons.length || !toast) return;
+
+      let toastTimer = null;
+
+      function showToast(message) {
+        toast.textContent = message || '포인트를 얻었습니다!';
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 1600);
+      }
+
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (btn.classList.contains('clicked')) return; // 이미 눌렀으면 무시
+
+          const type = btn.dataset.action;
+          const user = btn.dataset.user;
+          btn.classList.add('clicked');
+          btn.disabled = true;
+
+          if (type === 'cheer') {
+            const userName = user === 'minji' ? '민지님' : '준호님';
+            showToast(`🌱 ${userName} 정원을 응원했습니다! 잎 포인트를 얻었다!`);
+          } else if (type === 'visit') {
+            const userName = user === 'minji' ? '민지님' : '준호님';
+            showToast(`🌱 ${userName} 정원을 방문했습니다! 잎 포인트를 얻었다!`);
+          }
+        });
+      });
+    })();
+
+    // 커뮤니티 버튼 클릭
+    (function () {
+      const communityBtn = document.getElementById('community-btn');
+      if (!communityBtn) return;
+
+      communityBtn.addEventListener('click', () => {
+        window.location.href = 'community_screen.html';
+      });
+    })();
+  </script>
+</body>
+</html>
+
+

@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>정원 상점</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Sandoll Gothic Neo1", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: #d6e5cf; /* 세이지 그린 톤 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .device {
+      padding: 14px;
+      border-radius: 46px;
+      background: #dfead1;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .screen {
+      width: 390px;
+      height: 844px;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      background: #d6e5cf; /* 세이지 그린 톤으로 통일 */
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 8px;
+      left: 0;
+      right: 0;
+      padding: 0 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #222;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .status-left {
+      font-weight: 600;
+    }
+
+    .status-right {
+      display: flex;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .shop-root {
+      position: absolute;
+      top: 40px;
+      left: 16px;
+      right: 16px;
+      bottom: 80px;
+      padding: 8px 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .shop-header {
+      font-size: 18px;
+      font-weight: 700;
+      color: #7a5a26;
+    }
+
+    .shop-subtitle {
+      font-size: 12px;
+      color: #9a7a3d;
+      margin-bottom: 8px;
+    }
+
+    .currency-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      font-size: 11px;
+      color: #9a7a3d;
+      margin-bottom: 4px;
+    }
+
+    .currency-chip {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.92);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .coin-add-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: none;
+      background: #f2b348;
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-left: 4px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .coin-add-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 코인 상점 패널 */
+    .coin-shop-panel {
+      display: none;
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      max-height: 80vh;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      padding: 16px;
+      z-index: 10;
+      overflow-y: auto;
+    }
+
+    .coin-shop-panel.open {
+      display: block;
+    }
+
+    .coin-shop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .coin-shop-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #7a5a26;
+    }
+
+    .coin-shop-close {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: #f5f5f5;
+      color: #7a5a26;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .coin-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .coin-item {
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .coin-item:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+    }
+
+    .coin-image {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #f5f5f5;
+    }
+
+    .coin-amount {
+      font-size: 11px;
+      font-weight: 600;
+      color: #7a5a26;
+      text-align: center;
+    }
+
+    .coin-price {
+      font-size: 10px;
+      color: #9a7a3d;
+      text-align: center;
+    }
+
+    .coin-buy-btn {
+      width: 100%;
+      padding: 6px;
+      border-radius: 8px;
+      border: none;
+      background: #f2b348;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.1s ease;
+      box-shadow: 0 2px 4px rgba(242, 179, 72, 0.4);
+    }
+
+    .coin-buy-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(242, 179, 72, 0.5);
+    }
+
+    .coin-buy-btn.purchased {
+      background: #d7d3c9;
+      color: #7d7464;
+      cursor: default;
+      box-shadow: none;
+    }
+
+    .coin-shop-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9;
+    }
+
+    .coin-shop-overlay.show {
+      display: block;
+    }
+
+    .shop-section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #7a5a26;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .shop-item {
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .shop-item:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+    }
+
+    .item-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 14px;
+      background: #fff5df;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .item-texts {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #7a5a26;
+    }
+
+    .item-desc {
+      font-size: 11px;
+      color: #a4874f;
+    }
+
+    .item-price {
+      font-size: 11px;
+      color: #a4874f;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .item-buy-btn {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: none;
+      background: #f2b348;
+      color: #ffffff;
+      cursor: pointer;
+    }
+
+    /* 꽃 씨앗 3x3 그리드 */
+    .flower-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .flower-item {
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.96);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .flower-item:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+    }
+
+    .flower-image {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-color: #f5f5f5;
+    }
+
+    .flower-price {
+      font-size: 10px;
+      color: #7a5a26;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .flower-level {
+      font-size: 9px;
+      color: #a4874f;
+      text-align: center;
+    }
+
+    .flower-buy-btn {
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: none;
+      background: #f2b348;
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .flower-buy-btn:active {
+      transform: translateY(1px);
+    }
+
+    .flower-buy-btn:disabled,
+    .flower-buy-btn.purchased {
+      background: #d7d3c9;
+      color: #7d7464;
+      cursor: default;
+    }
+
+    /* 구매 완료 토스트 */
+    .shop-toast {
+      position: absolute;
+      left: 50%;
+      bottom: 70px;
+      transform: translateX(-50%);
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      font-size: 11px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease;
+      z-index: 5;
+    }
+
+    .shop-toast.show {
+      opacity: 1;
+    }
+
+    /* 하단 내비게이션 */
+    .bottom-nav {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 10px;
+      border-radius: 20px;
+      background: rgba(247, 244, 235, 0.98);
+      padding: 6px 10px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 3px 8px rgba(171, 187, 135, 0.4);
+      z-index: 4;
+    }
+
+    .nav-item {
+      flex: 1;
+      border: none;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 9px;
+      color: #9f8a72;
+      cursor: pointer;
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      stroke: #9f8a72;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .nav-item.active .nav-icon {
+      stroke: #6a4b32;
+    }
+
+    .nav-item.active {
+      color: #6a4b32;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="device">
+    <div class="screen">
+      <div class="status-bar">
+        <div class="status-left">--:--</div>
+        <div class="status-right">📶 🔋</div>
+      </div>
+
+      <div class="shop-root">
+        <h1 class="shop-header">정원 상점</h1>
+        <p class="shop-subtitle">씨앗, 화분, 스킨을 모아서 정원을 더 예쁘게 꾸며보세요.</p>
+
+        <div class="currency-row">
+          <span class="currency-chip">🌱 1,250 잎 포인트</span>
+          <span class="currency-chip">
+            💰 3,400 코인
+            <button class="coin-add-btn" id="coin-add-btn">+</button>
+          </span>
+        </div>
+
+        <div>
+          <h2 class="shop-section-title">오늘의 추천 씨앗</h2>
+          <div class="item-list">
+            <article class="shop-item">
+              <div class="item-icon">✨</div>
+              <div class="item-texts">
+                <div class="item-title">레어 골든 로즈 씨앗</div>
+                <div class="item-desc">황금빛으로 빛나는 특별한 장미 씨앗</div>
+                <div class="item-price">🌱 500 잎</div>
+              </div>
+              <button class="item-buy-btn">구매</button>
+            </article>
+
+            <article class="shop-item">
+              <div class="item-icon">🌻</div>
+              <div class="item-texts">
+                <div class="item-title">해바라기 씨앗</div>
+                <div class="item-desc">걷기 미션에 따라 빠르게 자라는 씨앗</div>
+                <div class="item-price">🌱 220 잎</div>
+              </div>
+              <button class="item-buy-btn">구매</button>
+            </article>
+
+          </div>
+
+          <!-- 꽃 씨앗 3x3 그리드 -->
+          <div class="flower-grid">
+            <div class="flower-item">
+              <div class="flower-image" style="background-image: url('꽃1.png');"></div>
+              <div class="flower-price">🌱 200 잎</div>
+              <button class="flower-buy-btn" data-flower="꽃1">구매</button>
+            </div>
+            <div class="flower-item">
+              <div class="flower-image" style="background-image: url('꽃2.png');"></div>
+              <div class="flower-price">🌱 250 잎</div>
+              <button class="flower-buy-btn" data-flower="꽃2">구매</button>
+            </div>
+            <div class="flower-item">
+              <div class="flower-image" style="background-image: url('꽃3.png');"></div>
+              <div class="flower-price">🌱 300 잎</div>
+              <button class="flower-buy-btn" data-flower="꽃3">구매</button>
+            </div>
+            <div class="flower-item">
+              <div class="flower-image" style="background-image: url('꽃4.png');"></div>
+              <div class="flower-price">🌱 350 잎</div>
+              <button class="flower-buy-btn" data-flower="꽃4">구매</button>
+            </div>
+            <div class="flower-item">
+              <div class="flower-image" style="background-image: url('꽃5.png');"></div>
+              <div class="flower-price">🌱 400 잎</div>
+              <button class="flower-buy-btn" data-flower="꽃5">구매</button>
+            </div>
+            <div class="flower-item">
+              <div class="flower-image" style="background-image: url('꽃6.png');"></div>
+              <div class="flower-price">🌱 450 잎</div>
+              <div class="flower-level">Lv 6부터 가능</div>
+            </div>
+            <div class="flower-item">
+              <div class="flower-image" style="background-image: url('꽃7.png');"></div>
+              <div class="flower-price">🌱 500 잎</div>
+              <div class="flower-level">Lv 7부터 가능</div>
+            </div>
+            <div class="flower-item">
+              <div class="flower-image" style="background-image: url('꽃8.png');"></div>
+              <div class="flower-price">🌱 550 잎</div>
+              <div class="flower-level">Lv 8부터 가능</div>
+            </div>
+            <div class="flower-item">
+              <div class="flower-image" style="background-image: url('꽃9.png');"></div>
+              <div class="flower-price">🌱 600 잎</div>
+              <div class="flower-level">Lv 10부터 가능</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h2 class="shop-section-title">화분 & 스킨</h2>
+          <div class="item-list">
+            <article class="shop-item">
+              <div class="item-icon">🪴</div>
+              <div class="item-texts">
+                <div class="item-title">파스텔 세라믹 화분</div>
+                <div class="item-desc">오늘의 화분 화면에 적용되는 파스텔 화분</div>
+                <div class="item-price">💰 1,000 코인</div>
+              </div>
+              <button class="item-buy-btn">구매</button>
+            </article>
+
+            <article class="shop-item">
+              <div class="item-icon">🎨</div>
+              <div class="item-texts">
+                <div class="item-title">정원 배경 스킨</div>
+                <div class="item-desc">홈 정원 배경을 새로운 테마로 변경</div>
+                <div class="item-price">💰 1,800 코인</div>
+              </div>
+              <button class="item-buy-btn">구매</button>
+            </article>
+          </div>
+        </div>
+      </div>
+
+      <nav class="bottom-nav">
+        <button class="nav-item" data-tab="home" aria-label="홈">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 11.5L12 4l8 7.5" />
+            <path d="M7.5 10.5V20h9v-9.5" />
+          </svg>
+          <span>홈</span>
+        </button>
+        <button class="nav-item" data-tab="mission" aria-label="미션">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="7" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 5V3" />
+            <path d="M19 12h2" />
+            <path d="M12 21v-2" />
+            <path d="M3 12h2" />
+          </svg>
+          <span>미션</span>
+        </button>
+        <button class="nav-item active" data-tab="shop" aria-label="상점">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="5" y="8" width="14" height="11" rx="2" />
+            <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+          </svg>
+          <span>상점</span>
+        </button>
+        <button class="nav-item" data-tab="neighbors" aria-label="이웃">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="9" cy="10" r="3" />
+            <path d="M4 18c0-2.2 2-4 5-4" />
+            <circle cx="17" cy="11" r="2.5" />
+            <path d="M14 18c0-1.8 1.7-3.3 4-3.3" />
+          </svg>
+          <span>이웃</span>
+        </button>
+        <button class="nav-item" data-tab="my" aria-label="MY">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="9" r="3" />
+            <path d="M6.5 19.5c.7-2.3 2.7-4 5.5-4s4.8 1.7 5.5 4" />
+          </svg>
+          <span>MY</span>
+        </button>
+      </nav>
+
+      <!-- 구매 완료 토스트 -->
+      <div class="shop-toast" id="shop-toast">구매되었습니다!</div>
+
+      <!-- 코인 상점 오버레이 -->
+      <div class="coin-shop-overlay" id="coin-shop-overlay"></div>
+
+      <!-- 코인 상점 패널 -->
+      <div class="coin-shop-panel" id="coin-shop-panel">
+        <div class="coin-shop-header">
+          <h2 class="coin-shop-title">코인 구매</h2>
+          <button class="coin-shop-close" id="coin-shop-close">×</button>
+        </div>
+        <div class="coin-grid" id="coin-grid">
+          <!-- 동적으로 생성됨 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const timeEl = document.querySelector('.status-left');
+      if (!timeEl) return;
+
+      function renderTime() {
+        const now = new Date();
+        const h = now.getHours().toString().padStart(2, '0');
+        const m = now.getMinutes().toString().padStart(2, '0');
+        timeEl.textContent = `${h}:${m}`;
+      }
+
+      renderTime();
+      setInterval(renderTime, 60000);
+    })();
+
+    (function () {
+      const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      if (!navItems.length) return;
+
+      navItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          const tab = item.dataset.tab;
+
+          if (tab === 'home') {
+            window.location.href = 'garden_home.html';
+            return;
+          }
+          if (tab === 'mission') {
+            window.location.href = 'mission_screen.html';
+            return;
+          }
+          if (tab === 'shop') {
+            window.location.href = 'shop_screen.html';
+            return;
+          }
+          if (tab === 'neighbors') {
+            window.location.href = 'neighbors_screen.html';
+            return;
+          }
+          if (tab === 'my') {
+            window.location.href = 'my_screen.html';
+            return;
+          }
+        });
+      });
+    })();
+
+    // 꽃 구매 버튼 클릭 → 토스트 알림
+    (function () {
+      const buyButtons = document.querySelectorAll('.flower-buy-btn');
+      const toast = document.getElementById('shop-toast');
+      if (!buyButtons.length || !toast) return;
+
+      let toastTimer = null;
+
+      function showToast() {
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 1600);
+      }
+
+      buyButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (btn.disabled) return;
+
+          // 구매 완료 처리
+          btn.disabled = true;
+          btn.textContent = '구매완료';
+          btn.classList.add('purchased');
+          showToast();
+        });
+      });
+    })();
+
+    // 상점 아이템 구매 버튼 클릭 → 토스트 알림
+    (function () {
+      const itemBuyButtons = document.querySelectorAll('.item-buy-btn');
+      const toast = document.getElementById('shop-toast');
+      if (!itemBuyButtons.length || !toast) return;
+
+      let toastTimer = null;
+
+      function showToast() {
+        toast.classList.add('show');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 1600);
+      }
+
+      itemBuyButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (btn.disabled) return;
+
+          // 구매 완료 처리
+          const originalText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = '구매완료';
+          btn.style.background = '#d7d3c9';
+          btn.style.color = '#7d7464';
+          showToast();
+        });
+      });
+    })();
+
+    // 코인 상점 기능
+    (function () {
+      const coinAddBtn = document.getElementById('coin-add-btn');
+      const coinShopPanel = document.getElementById('coin-shop-panel');
+      const coinShopOverlay = document.getElementById('coin-shop-overlay');
+      const coinShopClose = document.getElementById('coin-shop-close');
+      const coinGrid = document.getElementById('coin-grid');
+      const shopToast = document.getElementById('shop-toast');
+
+      if (!coinAddBtn || !coinShopPanel || !coinGrid) return;
+
+      // 코인 상점 데이터 (1000~50000)
+      const coinPackages = [
+        { amount: 1000, price: 1000 },
+        { amount: 2000, price: 1900 },
+        { amount: 3000, price: 2800 },
+        { amount: 5000, price: 4500 },
+        { amount: 10000, price: 8500 },
+        { amount: 15000, price: 12000 },
+        { amount: 20000, price: 15000 },
+        { amount: 30000, price: 22000 },
+        { amount: 50000, price: 35000 }
+      ];
+
+      // 코인 상점 그리드 렌더링
+      function renderCoinShop() {
+        coinGrid.innerHTML = '';
+
+        coinPackages.forEach((pkg) => {
+          const item = document.createElement('div');
+          item.className = 'coin-item';
+          item.dataset.amount = pkg.amount;
+          item.dataset.price = pkg.price;
+
+          item.innerHTML = `
+            <div class="coin-image" style="background-image: url('캐시.jpg');"></div>
+            <div class="coin-amount">${pkg.amount.toLocaleString()} 코인</div>
+            <div class="coin-price">₩${pkg.price.toLocaleString()}</div>
+            <button class="coin-buy-btn" data-amount="${pkg.amount}" data-price="${pkg.price}">구매</button>
+          `;
+
+          coinGrid.appendChild(item);
+        });
+      }
+
+      // 패널 열기
+      function openCoinShop() {
+        coinShopPanel.classList.add('open');
+        coinShopOverlay.classList.add('show');
+      }
+
+      // 패널 닫기
+      function closeCoinShop() {
+        coinShopPanel.classList.remove('open');
+        coinShopOverlay.classList.remove('show');
+      }
+
+      // + 버튼 클릭
+      coinAddBtn.addEventListener('click', () => {
+        openCoinShop();
+      });
+
+      // 닫기 버튼 클릭
+      if (coinShopClose) {
+        coinShopClose.addEventListener('click', () => {
+          closeCoinShop();
+        });
+      }
+
+      // 오버레이 클릭 시 닫기
+      coinShopOverlay.addEventListener('click', () => {
+        closeCoinShop();
+      });
+
+      // 구매 버튼 클릭
+      coinGrid.addEventListener('click', (event) => {
+        const btn = event.target.closest('.coin-buy-btn');
+        if (!btn || btn.disabled) return;
+
+        const amount = btn.dataset.amount;
+        const price = btn.dataset.price;
+
+        // 구매 처리
+        btn.disabled = true;
+        btn.textContent = '구매완료';
+        btn.classList.add('purchased');
+
+        if (shopToast) {
+          shopToast.textContent = `${amount.toLocaleString()} 코인을 구매했습니다!`;
+          shopToast.classList.add('show');
+          setTimeout(() => {
+            shopToast.classList.remove('show');
+          }, 1600);
+        }
+
+        // 실제 결제 시스템 연동은 여기에 추가
+        console.log(`구매: ${amount} 코인, 가격: ₩${price}`);
+      });
+
+      // 초기 렌더링
+      renderCoinShop();
+    })();
+  </script>
+</body>
+</html>
+
+

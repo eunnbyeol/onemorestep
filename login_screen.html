@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>로그인</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Sandoll Gothic Neo1", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: #d6e5cf; /* 연두색 배경 */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .device {
+      padding: 14px;
+      border-radius: 46px;
+      background: #dfead1;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .screen {
+      width: 390px;
+      height: 844px;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      background: #d6e5cf; /* 연두색 배경 */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .login-logo-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .login-logo-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: #5a402a;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #5a402a;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 2px solid #e0e0e0;
+      background: #ffffff;
+      font-size: 15px;
+      color: #222;
+      font-family: "Sandoll Gothic Neo1", sans-serif;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #8fd694;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      background: #666666;
+      color: #ffffff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+      font-family: "Sandoll Gothic Neo1", sans-serif;
+    }
+
+    .login-btn:active {
+      transform: translateY(1px);
+    }
+
+    .signup-link {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 14px;
+      color: #5a402a;
+    }
+
+    .signup-link a {
+      color: #666666;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .signup-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="device">
+    <div class="screen">
+      <div class="login-container">
+        <div class="login-logo">
+          <div class="login-logo-icon">🌱</div>
+          <div class="login-logo-text">One More Step</div>
+        </div>
+
+        <form class="login-form" id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="email">이메일</label>
+            <input type="email" id="email" class="form-input" placeholder="이메일을 입력하세요" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">비밀번호</label>
+            <input type="password" id="password" class="form-input" placeholder="비밀번호를 입력하세요" required />
+          </div>
+
+          <button type="submit" class="login-btn">로그인</button>
+        </form>
+
+        <div class="signup-link">
+          계정이 없으신가요? <a href="#" id="signup-link">회원가입</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 로그인 폼 제출
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // 로그인 성공 시 온보딩 화면으로 이동
+      window.location.href = 'onboarding_screen.html';
+    });
+
+    // 회원가입 링크 클릭
+    document.getElementById('signup-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      // 회원가입 후에도 온보딩 화면으로 이동
+      window.location.href = 'onboarding_screen.html';
+    });
+  </script>
+</body>
+</html>
+

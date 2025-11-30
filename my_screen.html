@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>MY 정원</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Sandoll Gothic Neo1", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      background: #d6e5cf;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .device {
+      padding: 14px;
+      border-radius: 46px;
+      background: #dfead1;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+    }
+
+    .screen {
+      width: 390px;
+      height: 844px;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      background: #F8F7F2; /* 아이보리 톤 */
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 8px;
+      left: 0;
+      right: 0;
+      padding: 0 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #222;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .status-left {
+      font-weight: 600;
+    }
+
+    .status-right {
+      display: flex;
+      gap: 6px;
+      font-size: 12px;
+    }
+
+    .my-root {
+      position: absolute;
+      top: 40px;
+      left: 16px;
+      right: 16px;
+      bottom: 80px;
+      padding: 8px 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    /* 1) 상단 프로필 카드 */
+    .profile-card {
+      border-radius: 16px;
+      background: linear-gradient(135deg, #f0f8e8 0%, #e8f5e0 100%);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+    }
+
+    .profile-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .profile-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #4CAF50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+    }
+
+    .profile-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .profile-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #2e7d32;
+      margin-bottom: 4px;
+    }
+
+    .profile-status {
+      font-size: 12px;
+      color: #558b2f;
+    }
+
+    .profile-settings-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      flex-shrink: 0;
+    }
+
+    .profile-settings-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* 2) 나의 정원 요약 섹션 */
+    .garden-summary-section {
+      border-radius: 16px;
+      background: #ffffff;
+      padding: 14px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #2e7d32;
+      margin-bottom: 12px;
+    }
+
+    .garden-summary-content {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .garden-level-info {
+      font-size: 13px;
+      color: #558b2f;
+      margin-bottom: 4px;
+    }
+
+    .garden-stats {
+      font-size: 12px;
+      color: #81c784;
+      margin-bottom: 8px;
+    }
+
+    .garden-description {
+      font-size: 12px;
+      color: #9e9e9e;
+      line-height: 1.5;
+    }
+
+
+    /* 3) 나의 루틴 기록 섹션 */
+    .routine-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .routine-cards {
+      display: flex;
+      gap: 10px;
+    }
+
+    .routine-card {
+      flex: 1;
+      border-radius: 16px;
+      background: #ffffff;
+      padding: 14px 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .routine-card-title {
+      font-size: 12px;
+      color: #9e9e9e;
+      font-weight: 500;
+    }
+
+    .routine-card-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #4CAF50;
+    }
+
+    .routine-card-sub {
+      font-size: 11px;
+      color: #81c784;
+    }
+
+    /* 4) 개인 설정 섹션 */
+    .settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .settings-item {
+      border-radius: 12px;
+      background: #ffffff;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    .settings-item:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .settings-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #e8f5e9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .settings-text {
+      flex: 1;
+      font-size: 14px;
+      color: #424242;
+      font-weight: 500;
+    }
+
+    .settings-arrow {
+      font-size: 14px;
+      color: #bdbdbd;
+    }
+
+    /* 5) 서비스 / 기타 섹션 */
+    .service-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* 하단 내비게이션 */
+    .bottom-nav {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 10px;
+      border-radius: 20px;
+      background: rgba(247, 244, 235, 0.98);
+      padding: 6px 10px 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 3px 8px rgba(171, 187, 135, 0.4);
+      z-index: 4;
+    }
+
+    .nav-item {
+      flex: 1;
+      border: none;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 9px;
+      color: #9f8a72;
+      cursor: pointer;
+    }
+
+    .nav-icon {
+      width: 22px;
+      height: 22px;
+      stroke: #9f8a72;
+      stroke-width: 1.8;
+      fill: none;
+    }
+
+    .nav-item.active .nav-icon {
+      stroke: #6a4b32;
+    }
+
+    .nav-item.active {
+      color: #6a4b32;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="device">
+    <div class="screen">
+      <div class="status-bar">
+        <div class="status-left">--:--</div>
+        <div class="status-right">📶 🔋</div>
+      </div>
+
+      <div class="my-root">
+        <!-- 1) 상단 프로필 카드 -->
+        <section class="profile-card">
+          <div class="profile-left">
+            <div class="profile-avatar">🐶</div>
+            <div class="profile-info">
+              <div class="profile-name">송이님</div>
+              <div class="profile-status">요즘은 아침 루틴 도전 중!</div>
+            </div>
+          </div>
+          <button class="profile-settings-btn" aria-label="설정">⚙︎</button>
+        </section>
+
+        <!-- 2) 나의 정원 요약 섹션 -->
+        <section class="garden-summary-section">
+          <h2 class="section-title">나의 정원</h2>
+          <div class="garden-summary-content">
+            <div class="garden-level-info">정원 레벨 3 · 맑음</div>
+            <div class="garden-stats">오늘 물 준 화분 3개</div>
+            <div class="garden-description">이번 주에는 꽃밭을 가득 채워봐요!</div>
+          </div>
+        </section>
+
+        <!-- 나의 기록 버튼 -->
+        <div class="settings-item" id="activity-record-btn" style="margin-top: -4px;">
+          <div class="settings-icon">📊</div>
+          <div class="settings-text">나의 기록</div>
+          <div class="settings-arrow">›</div>
+        </div>
+
+        <!-- 3) 나의 루틴 기록 섹션 -->
+        <section class="routine-section">
+          <h2 class="section-title">나의 루틴</h2>
+          <div class="routine-cards">
+            <div class="routine-card">
+              <div class="routine-card-title">오늘의 미션</div>
+              <div class="routine-card-value">3/5</div>
+              <div class="routine-card-sub">개 완료</div>
+            </div>
+            <div class="routine-card">
+              <div class="routine-card-title">연속 달성</div>
+              <div class="routine-card-value">7</div>
+              <div class="routine-card-sub">일째</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4) 개인 설정 섹션 -->
+        <section class="settings-section">
+          <div class="settings-item">
+            <div class="settings-icon">👤</div>
+            <div class="settings-text">프로필/정원 정보 수정</div>
+            <div class="settings-arrow">›</div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">🔔</div>
+            <div class="settings-text">알림 설정</div>
+            <div class="settings-arrow">›</div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">🎨</div>
+            <div class="settings-text">테마/정원 스킨 설정</div>
+            <div class="settings-arrow">›</div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">🚪</div>
+            <div class="settings-text">로그아웃</div>
+            <div class="settings-arrow">›</div>
+          </div>
+        </section>
+
+        <!-- 5) 서비스 / 기타 섹션 -->
+        <section class="service-section">
+          <div class="settings-item">
+            <div class="settings-icon">❓</div>
+            <div class="settings-text">도움말 & FAQ</div>
+            <div class="settings-arrow">›</div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">💬</div>
+            <div class="settings-text">문의하기</div>
+            <div class="settings-arrow">›</div>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon">📢</div>
+            <div class="settings-text">공지사항 / 이벤트</div>
+            <div class="settings-arrow">›</div>
+          </div>
+        </section>
+      </div>
+
+      <nav class="bottom-nav">
+        <button class="nav-item" data-tab="home" aria-label="홈">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <path d="M4 11.5L12 4l8 7.5" />
+            <path d="M7.5 10.5V20h9v-9.5" />
+          </svg>
+          <span>홈</span>
+        </button>
+        <button class="nav-item" data-tab="mission" aria-label="미션">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="7" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 5V3" />
+            <path d="M19 12h2" />
+            <path d="M12 21v-2" />
+            <path d="M3 12h2" />
+          </svg>
+          <span>미션</span>
+        </button>
+        <button class="nav-item" data-tab="shop" aria-label="상점">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <rect x="5" y="8" width="14" height="11" rx="2" />
+            <path d="M9 8V6a3 3 0 0 1 6 0v2" />
+          </svg>
+          <span>상점</span>
+        </button>
+        <button class="nav-item" data-tab="neighbors" aria-label="이웃">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="9" cy="10" r="3" />
+            <path d="M4 18c0-2.2 2-4 5-4" />
+            <circle cx="17" cy="11" r="2.5" />
+            <path d="M14 18c0-1.8 1.7-3.3 4-3.3" />
+          </svg>
+          <span>이웃</span>
+        </button>
+        <button class="nav-item active" data-tab="my" aria-label="MY">
+          <svg class="nav-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="9" r="3" />
+            <path d="M6.5 19.5c.7-2.3 2.7-4 5.5-4s4.8 1.7 5.5 4" />
+          </svg>
+          <span>MY</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const timeEl = document.querySelector('.status-left');
+      if (!timeEl) return;
+
+      function renderTime() {
+        const now = new Date();
+        const h = now.getHours().toString().padStart(2, '0');
+        const m = now.getMinutes().toString().padStart(2, '0');
+        timeEl.textContent = `${h}:${m}`;
+      }
+
+      renderTime();
+      setInterval(renderTime, 60000);
+    })();
+
+    (function () {
+      const navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      if (!navItems.length) return;
+
+      navItems.forEach((item) => {
+        item.addEventListener('click', () => {
+          const tab = item.dataset.tab;
+
+          if (tab === 'home') {
+            window.location.href = 'garden_home.html';
+            return;
+          }
+          if (tab === 'mission') {
+            window.location.href = 'mission_screen.html';
+            return;
+          }
+          if (tab === 'shop') {
+            window.location.href = 'shop_screen.html';
+            return;
+          }
+          if (tab === 'neighbors') {
+            window.location.href = 'neighbors_screen.html';
+            return;
+          }
+          if (tab === 'my') {
+            window.location.href = 'my_screen.html';
+            return;
+          }
+        });
+      });
+    })();
+
+    // 나의 기록 버튼 클릭 → activity_record.html로 이동
+    (function () {
+      const recordBtn = document.getElementById('activity-record-btn');
+      if (!recordBtn) return;
+
+      recordBtn.addEventListener('click', () => {
+        window.location.href = 'activity_record.html';
+      });
+    })();
+  </script>
+</body>
+</html>
